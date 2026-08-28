@@ -70,10 +70,24 @@ function Index() {
   const [fileName, setFileName] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [trackResult, setTrackResult] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginMessage, setLoginMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   const total = cart.reduce((s, l) => s + l.price * l.qty, 0);
 
-  const addToCart = (p: (typeof products)[number]) =>
+  const login = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username.trim() === "" || password.trim() === "") {
+      setLoginMessage({ text: "Please fill all details.", ok: false });
+      return;
+    }
+    setLoginMessage({ text: `Welcome ${username.trim()}! Login successful.`, ok: true });
+    setPassword("");
+  };
+
+  const addToCart = (p: { id: number; name: string; price: number }) =>
+
     setCart((c) =>
       c.some((l) => l.id === p.id)
         ? c.map((l) => (l.id === p.id ? { ...l, qty: l.qty + 1 } : l))
