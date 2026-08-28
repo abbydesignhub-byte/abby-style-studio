@@ -34,7 +34,32 @@ const products = [
   { id: 3, name: "Custom Logo Shirt", price: 12000, img: teeCustom, tag: "Bestseller" },
 ];
 
+const offers = [
+  {
+    id: 101,
+    name: "Business Branding Package",
+    desc: "10 custom t-shirts + logo printing",
+    price: 100000,
+    cta: "Order Premium Package",
+  },
+  {
+    id: 102,
+    name: "VIP Customer Package",
+    desc: "Exclusive designs + priority delivery",
+    price: 50000,
+    cta: "Join VIP",
+  },
+];
+
+const deal = {
+  id: 201,
+  name: "Weekly Deal Shirt",
+  desc: "20% OFF selected branded t-shirts",
+  price: 6000,
+};
+
 const naira = (n: number) => "₦" + n.toLocaleString("en-NG");
+
 
 type CartLine = { id: number; name: string; price: number; qty: number };
 
