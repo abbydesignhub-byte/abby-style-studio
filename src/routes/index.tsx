@@ -470,11 +470,11 @@ function Index() {
               <p className="mt-1 text-xl font-bold">0805 525 6283</p>
             </a>
             <a
-              href="mailto:victayo12@gmail.com"
+              href="mailto:abbydesignhub@gmail.com"
               className="rounded-xl bg-card p-6 shadow-card transition-transform hover:-translate-y-1"
             >
               <p className="text-sm uppercase tracking-wide text-muted-foreground">Email</p>
-              <p className="mt-1 text-xl font-bold break-all">victayo12@gmail.com</p>
+              <p className="mt-1 text-xl font-bold break-all">abbydesignhub@gmail.com</p>
             </a>
           </div>
         </div>
