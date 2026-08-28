@@ -1,11 +1,15 @@
 const links = [
   { href: "#home", label: "Home" },
   { href: "#shop", label: "Shop" },
+  { href: "#premium", label: "Offers" },
+  { href: "#deals", label: "Deals" },
   { href: "#custom", label: "Custom Design" },
   { href: "#payment", label: "Payment" },
   { href: "#track", label: "Track Order" },
+  { href: "#login", label: "Login" },
   { href: "#contact", label: "Contact" },
 ];
+
 
 export function Nav() {
   return (
