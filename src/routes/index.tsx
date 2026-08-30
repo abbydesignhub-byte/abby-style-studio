@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
 const WHATSAPP = "2348055256283";
 const EMAIL = "abbydesignhub@gmail.com";
 
-const fallbackImages = [teeBlack, teeBusiness, teeCustom];
+const fallbackImages = [teeNaija, teeLimited, teeGod, teeGrowing, teeFocus, teePretty];
 
 const fallbackProducts = [
   { id: "f1", name: "Made In Naija Tee", description: "Heavyweight cotton, statement print", price: 12500, image_url: null, category: "shop" },
