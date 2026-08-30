@@ -635,6 +635,8 @@ function Index() {
           © 2026 Abby × Emmy Style Studio. All rights reserved. Designed in Nigeria.
         </p>
       </footer>
+
+      <AiAssistant />
     </div>
   );
 }
