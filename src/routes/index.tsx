@@ -5,9 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { listProducts, placeOrder, trackOrder } from "@/lib/shop.functions";
 import heroImg from "@/assets/hero.jpg";
-import teeBlack from "@/assets/tee-black.jpg";
-import teeBusiness from "@/assets/tee-business.jpg";
-import teeCustom from "@/assets/tee-custom.jpg";
+import teeNaija from "@/assets/tee-naija.jpg";
+import teeLimited from "@/assets/tee-limited.jpg";
+import teeGod from "@/assets/tee-god.jpg";
+import teeGrowing from "@/assets/tee-growing.jpg";
+import teeFocus from "@/assets/tee-focus.jpg";
+import teePretty from "@/assets/tee-pretty.jpg";
+import { AiAssistant } from "@/components/site/AiAssistant";
 
 export const Route = createFileRoute("/")({
   head: () => ({
