@@ -38,7 +38,10 @@ export function AiAssistant() {
     } catch {
       setMessages([
         ...next,
-        { role: "assistant", content: "Something went wrong. Please try again or message us on WhatsApp." },
+        {
+          role: "assistant",
+          content: "Something went wrong. Please try again or message us on WhatsApp.",
+        },
       ]);
     } finally {
       setBusy(false);
@@ -46,46 +49,59 @@ export function AiAssistant() {
   };
 
   return (
-    <>
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
         <section
           aria-label="Style assistant chat"
-          className="fixed bottom-24 right-5 z-50 flex h-[26rem] w-[min(22rem,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-gold/30 bg-card shadow-card"
+          className="panel-luxe flex h-[27rem] w-[min(22rem,calc(100vw-3rem))] flex-col overflow-hidden"
         >
-          <header className="bg-gradient-ink px-4 py-3 text-ink-foreground">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Style Assistant</p>
-            <p className="text-xs text-ink-foreground/70">Ask about tees, custom prints & delivery</p>
+          <header className="flex items-center gap-3 bg-gradient-ink px-4 py-3 text-ink-foreground">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/60 font-display text-sm tracking-widest text-gold">
+              AE
+            </span>
+            <span>
+              <span className="block font-display text-lg tracking-[0.18em] text-gold">
+                ASK ABBY AI
+              </span>
+              <span className="block text-[10px] uppercase tracking-[0.28em] text-ink-foreground/60">
+                Style Assistant
+              </span>
+            </span>
           </header>
 
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+          <div className="flex-1 space-y-3 overflow-y-auto bg-background/60 p-4">
             {messages.map((m, i) => (
               <p
                 key={i}
-                className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
+                className={`max-w-[85%] rounded-sm px-3 py-2 text-sm leading-relaxed ${
                   m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "bg-secondary text-foreground"
+                    ? "ml-auto bg-gold text-primary-foreground"
+                    : "border border-border bg-card text-foreground"
                 }`}
               >
                 {m.content}
               </p>
             ))}
-            {busy && <p className="text-xs text-muted-foreground">Typing…</p>}
+            {busy && (
+              <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                Typing…
+              </p>
+            )}
             <div ref={endRef} />
           </div>
 
-          <form onSubmit={send} className="flex gap-2 border-t p-3">
+          <form onSubmit={send} className="flex gap-2 border-t border-border bg-card p-3">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your question…"
               aria-label="Message the style assistant"
-              className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+              className="flex-1 rounded-sm border border-border bg-background px-3 py-2 text-sm"
             />
             <button
               type="submit"
               disabled={busy}
-              className="rounded-md bg-gradient-gold px-4 py-2 text-xs font-bold uppercase text-accent-foreground disabled:opacity-50"
+              className="btn-gold px-4 py-2 text-[11px] disabled:opacity-50"
             >
               Send
             </button>
@@ -96,10 +112,12 @@ export function AiAssistant() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close style assistant" : "Open style assistant"}
-        className="fixed bottom-5 right-5 z-50 rounded-full bg-gradient-gold px-5 py-4 text-sm font-bold uppercase tracking-wide text-accent-foreground shadow-gold"
+        className="btn-gold flex items-center gap-2 px-5 py-3.5 text-[11px]"
       >
-        {open ? "Close" : "Ask Abby AI"}
+        <span className="font-display text-base tracking-[0.18em]">
+          {open ? "CLOSE" : "ASK ABBY AI"}
+        </span>
       </button>
-    </>
+    </div>
   );
 }
