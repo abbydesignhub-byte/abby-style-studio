@@ -9,12 +9,13 @@
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* One luxury radius across the whole site (rounded-full stays a pill). */
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,9 +97,20 @@
 
   h1,
   h2,
-  h3 {
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: 0.02em;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: var(--font-sans);
+    border-radius: var(--radius);
   }
 }
 
@@ -123,4 +135,30 @@
   font-weight: 600;
   letter-spacing: 0.38em;
   text-transform: uppercase;
+}
+
+@utility btn-gold {
+  border-radius: var(--radius);
+  background-image: var(--gradient-gold);
+  box-shadow: var(--shadow-gold);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+@utility btn-outline-gold {
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent);
+  color: var(--gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+@utility panel-luxe {
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+  background-color: var(--card);
+  box-shadow: var(--shadow-card);
 }
