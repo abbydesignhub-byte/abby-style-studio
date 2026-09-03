@@ -11,7 +11,6 @@ import teeGod from "@/assets/tee-god.jpg";
 import teeGrowing from "@/assets/tee-growing.jpg";
 import teeFocus from "@/assets/tee-focus.jpg";
 import teePretty from "@/assets/tee-pretty.jpg";
-import { AiAssistant } from "@/components/site/AiAssistant";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -636,7 +635,6 @@ function Index() {
         </p>
       </footer>
 
-      <AiAssistant />
     </div>
   );
 }
