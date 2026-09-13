@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_allowlist: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          admin_email: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          record_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_email?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          record_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          record_id?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -24,6 +66,7 @@ export type Database = {
           items: Json
           order_number: string
           paid_at: string | null
+          payment_channel: string | null
           payment_method: string
           payment_reference: string | null
           payment_status: string
@@ -43,6 +86,7 @@ export type Database = {
           items?: Json
           order_number?: string
           paid_at?: string | null
+          payment_channel?: string | null
           payment_method?: string
           payment_reference?: string | null
           payment_status?: string
@@ -62,6 +106,7 @@ export type Database = {
           items?: Json
           order_number?: string
           paid_at?: string | null
+          payment_channel?: string | null
           payment_method?: string
           payment_reference?: string | null
           payment_status?: string
@@ -169,6 +214,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      list_admin_users: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          is_registered: boolean
+          last_login: string
+        }[]
       }
     }
     Enums: {
