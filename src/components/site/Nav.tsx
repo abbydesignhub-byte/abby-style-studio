@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/site/Logo";
+
 
 const links = [
   { href: "#home", label: "Home" },
@@ -36,19 +38,10 @@ export function Nav({ cartCount = 0 }: { cartCount?: number }) {
 
       <div className="border-b border-border/60 bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-3 lg:flex-row lg:items-center lg:justify-between">
-          <a href="#home" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/60 font-display text-lg tracking-widest text-gold">
-              AE
-            </span>
-            <span className="leading-none">
-              <span className="block font-display text-2xl tracking-[0.16em]">
-                ABBY <span className="text-gold">×</span> EMMY
-              </span>
-              <span className="block text-[10px] uppercase tracking-[0.42em] text-muted-foreground">
-                Style Studio
-              </span>
-            </span>
+          <a href="#home" className="flex items-center">
+            <Logo size={44} withTagline />
           </a>
+
 
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold uppercase tracking-[0.16em]">
             {links.map((l) => (
