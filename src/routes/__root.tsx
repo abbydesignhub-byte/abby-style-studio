@@ -78,11 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Abby Design Hub" },
-      { name: "description", content: "Premium branded and custom t-shirts." },
-      { name: "author", content: "Abby Design Hub" },
-      { property: "og:title", content: "Abby Design Hub" },
-      { property: "og:description", content: "Premium branded and custom t-shirts." },
+      { title: "EMMY & ABBY — Premium Nigerian Fashion" },
+      {
+        name: "description",
+        content: "One Style. Two Brands. Endless You. Premium branded and custom tees.",
+      },
+      { name: "author", content: "EMMY & ABBY" },
+      { property: "og:title", content: "EMMY & ABBY — Premium Nigerian Fashion" },
+      {
+        property: "og:description",
+        content: "One Style. Two Brands. Endless You. Premium branded and custom tees.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -97,7 +103,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+
     ],
   }),
 
