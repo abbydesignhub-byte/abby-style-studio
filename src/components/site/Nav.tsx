@@ -58,8 +58,8 @@ export function Nav({ cartCount = 0 }: { cartCount?: number }) {
           <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em]">
             {email ? (
               <>
-                <Link to="/admin" className="text-foreground/70 transition-colors hover:text-gold">
-                  Dashboard
+                <Link to="/account" className="text-foreground/70 transition-colors hover:text-gold">
+                  My account
                 </Link>
                 <button
                   onClick={() => supabase.auth.signOut()}
@@ -73,6 +73,7 @@ export function Nav({ cartCount = 0 }: { cartCount?: number }) {
                 Sign in
               </Link>
             )}
+
             <a
               href="#cart"
               className="rounded-sm bg-gradient-gold px-4 py-2 text-primary-foreground shadow-gold"
