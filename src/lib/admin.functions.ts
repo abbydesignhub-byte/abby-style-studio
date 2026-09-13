@@ -13,12 +13,52 @@ const productSchema = z.object({
   isActive: z.boolean(),
 });
 
+export const ORDER_STATUSES = [
+  "pending",
+  "payment_confirmed",
+  "processing",
+  "ready_for_delivery",
+  "shipped",
+  "delivered",
+  "cancelled",
+] as const;
+
 const orderUpdateSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["pending", "paid", "printing", "shipped", "delivered", "cancelled"]),
+  status: z.enum(ORDER_STATUSES),
   trackingNumber: z.string().trim().max(80).optional().or(z.literal("")),
   trackingNote: z.string().trim().max(300).optional().or(z.literal("")),
 });
+
+/** Records an admin action in the audit log. Never throws. */
+async function audit(
+  adminEmail: string,
+  action: string,
+  detail: string,
+  recordId?: string | null,
+) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("audit_log")
+      .insert({ admin_email: adminEmail, action, detail, record_id: recordId ?? null });
+  } catch {
+    /* auditing must never block the action */
+  }
+}
+
+/** Throws unless the caller holds the admin role in the database. */
+async function assertAdmin(context: {
+  supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => Promise<{ data: unknown }> };
+  userId: string;
+}) {
+  const { data } = await context.supabase.rpc("has_role", {
+    _user_id: context.userId,
+    _role: "admin",
+  });
+  if (data !== true) throw new Error("ACCESS DENIED");
+}
+
 
 export const getIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
