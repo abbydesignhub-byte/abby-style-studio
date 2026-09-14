@@ -103,6 +103,7 @@ function Index() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [payMethod, setPayMethod] = useState<"transfer" | "card" | "ussd">("transfer");
   const [placing, setPlacing] = useState(false);
   const [orderResult, setOrderResult] = useState<{ ok: boolean; text: string } | null>(null);
 
