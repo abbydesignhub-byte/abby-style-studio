@@ -6,6 +6,7 @@ const startSchema = z.object({
   customerPhone: z.string().trim().min(7).max(25),
   customerEmail: z.string().trim().email().max(120),
   callbackUrl: z.string().trim().url().max(300),
+  channel: z.enum(["card", "ussd", "bank_transfer"]).default("card"),
   items: z
     .array(
       z.object({
