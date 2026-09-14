@@ -608,11 +608,18 @@ function Index() {
               </a>
             </div>
             <div className="rounded-sm border border-border bg-background p-7">
-              <h3 className="text-2xl">Pay Online</h3>
+              <h3 className="text-2xl text-gold">Pay Online</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Card and USSD payments are coming soon. For now, bank transfer confirms your order
-                fastest.
+                Pay instantly by card or from your bank's USSD menu. Choose Card or USSD in your
+                cart and you'll be taken to our secure payment page. Your order is only confirmed
+                once the payment is verified.
               </p>
+              <a
+                href="#cart"
+                className="mt-6 inline-block rounded-sm border border-gold/50 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-gold"
+              >
+                Pay from my cart
+              </a>
             </div>
           </div>
         </div>
