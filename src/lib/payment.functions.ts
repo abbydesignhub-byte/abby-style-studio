@@ -99,20 +99,50 @@ export const verifyOnlinePayment = createServerFn({ method: "POST" })
       { headers: { Authorization: `Bearer ${secret}` } },
     );
     const json = (await res.json().catch(() => null)) as
-      | { status?: boolean; data?: { status?: string; amount?: number } }
+      | {
+          status?: boolean;
+          data?: { status?: string; amount?: number; currency?: string; channel?: string };
+        }
       | null;
 
-    const paid = Boolean(json?.status) && json?.data?.status === "success";
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing } = await supabaseAdmin
+      .from("orders")
+      .select("order_number, total, payment_status, payment_channel")
+      .eq("payment_reference", data.reference)
+      .maybeSingle();
+
+    if (!existing) return { ok: false as const, error: "We could not find that payment." };
+
+    // Already confirmed — stay idempotent.
+    if (existing.payment_status === "paid") {
+      return {
+        ok: true as const,
+        orderNumber: existing.order_number,
+        total: Number(existing.total),
+        channel: existing.payment_channel,
+      };
+    }
+
+    const tx = json?.data;
+    const amountMatches = Math.round(Number(existing.total) * 100) === Number(tx?.amount ?? -1);
+    const paid =
+      Boolean(json?.status) && tx?.status === "success" && tx?.currency === "NGN" && amountMatches;
+
     const { data: order } = await supabaseAdmin
       .from("orders")
       .update(
         paid
-          ? { payment_status: "paid", status: "paid", paid_at: new Date().toISOString() }
+          ? {
+              payment_status: "paid",
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              payment_channel: tx?.channel ?? existing.payment_channel,
+            }
           : { payment_status: "failed" },
       )
       .eq("payment_reference", data.reference)
-      .select("order_number, total")
+      .select("order_number, total, payment_channel")
       .maybeSingle();
 
     if (!paid) return { ok: false as const, error: "Payment was not completed." };
@@ -120,5 +150,6 @@ export const verifyOnlinePayment = createServerFn({ method: "POST" })
       ok: true as const,
       orderNumber: order?.order_number ?? null,
       total: order ? Number(order.total) : null,
+      channel: order?.payment_channel ?? null,
     };
   });
