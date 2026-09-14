@@ -129,6 +129,37 @@ function Index() {
     if (cart.length === 0) return;
     setPlacing(true);
     setOrderResult(null);
+
+    if (payMethod !== "transfer") {
+      try {
+        if (!email.trim()) {
+          setOrderResult({ ok: false, text: "Please add your email address to pay online." });
+          setPlacing(false);
+          return;
+        }
+        const pay = await startPaymentFn({
+          data: {
+            customerName: name.trim(),
+            customerPhone: phone.trim(),
+            customerEmail: email.trim(),
+            callbackUrl: `${window.location.origin}/payment-callback`,
+            channel: payMethod,
+            items: cart.map((l) => ({ name: l.name, price: l.price, qty: l.qty })),
+          },
+        });
+        if (pay.ok) {
+          window.location.href = pay.authorizationUrl;
+          return;
+        }
+        setOrderResult({ ok: false, text: pay.error });
+      } catch {
+        setOrderResult({ ok: false, text: "We couldn't start your payment. Please try again." });
+      } finally {
+        setPlacing(false);
+      }
+      return;
+    }
+
     try {
       const res = await placeOrderFn({
         data: {
