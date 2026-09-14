@@ -210,6 +210,31 @@ function OrdersPanel() {
                 <span className="mt-1 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">
                   {o.status}
                 </span>
+                <span
+                  className={`mt-1 ml-2 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                    o.payment_status === "paid"
+                      ? "bg-emerald-500/15 text-emerald-600"
+                      : o.payment_status === "failed"
+                        ? "bg-destructive/15 text-destructive"
+                        : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {o.payment_status === "paid" ? "Payment confirmed" : o.payment_status}
+                </span>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {o.payment_method}
+                  {o.payment_channel ? ` · ${o.payment_channel}` : ""}
+                </p>
+                {o.payment_reference && (
+                  <p className="font-mono text-[11px] text-muted-foreground">
+                    {o.payment_reference}
+                  </p>
+                )}
+                {o.paid_at && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Paid {new Date(o.paid_at).toLocaleString("en-NG")}
+                  </p>
+                )}
               </div>
             </div>
 

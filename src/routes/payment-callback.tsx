@@ -52,24 +52,60 @@ function PaymentCallback() {
         ) : isPending ? (
           <p className="mt-4 text-muted-foreground">Confirming your payment…</p>
         ) : data?.ok ? (
-          <div className="panel-luxe mt-8 p-8">
-            <p className="text-2xl text-gold">Payment received</p>
-            <p className="mt-3">
-              Your order number is <span className="font-bold text-gold">{data.orderNumber}</span>.
-              Keep it to track your delivery.
-            </p>
+          <div className="panel-luxe mt-8 p-8 text-left">
+            <p className="text-center text-2xl text-gold">Payment successful</p>
+            <dl className="mt-6 space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Order number</dt>
+                <dd className="font-bold text-gold">{data.orderNumber}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Amount paid</dt>
+                <dd className="font-bold">
+                  ₦{Number(data.total ?? 0).toLocaleString("en-NG")}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Paid with</dt>
+                <dd className="font-bold capitalize">{data.channel ?? "online"}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Date</dt>
+                <dd className="font-bold">{new Date().toLocaleString("en-NG")}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Estimated delivery</dt>
+                <dd className="font-bold">3–5 working days</dd>
+              </div>
+            </dl>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <a href="/#track" className="btn-gold">
+                Track order
+              </a>
+              <Link to="/" className="btn-outline-gold">
+                Continue shopping
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="panel-luxe mt-8 p-8">
-            <p className="text-2xl text-destructive">Payment not completed</p>
+            <p className="text-2xl text-destructive">Payment could not be completed</p>
             <p className="mt-3 text-muted-foreground">
               {data && "error" in data ? data.error : "Please try again or pay by bank transfer."}
             </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <a href="/#cart" className="btn-gold">
+                Try again
+              </a>
+              <a href="/#payment" className="btn-outline-gold">
+                Choose another method
+              </a>
+              <Link to="/" className="btn-outline-gold">
+                Return to cart
+              </Link>
+            </div>
           </div>
         )}
-        <Link to="/" className="btn-gold mt-8 inline-block">
-          Back to shop
-        </Link>
       </main>
     </div>
   );

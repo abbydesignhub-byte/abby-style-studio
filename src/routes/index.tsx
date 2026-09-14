@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { listProducts, placeOrder, trackOrder } from "@/lib/shop.functions";
+import { startOnlinePayment } from "@/lib/payment.functions";
 import heroImg from "@/assets/hero.jpg";
 import teeNaija from "@/assets/tee-naija.jpg";
 import teeLimited from "@/assets/tee-limited.jpg";
@@ -83,6 +84,7 @@ function Index() {
   const listProductsFn = useServerFn(listProducts);
   const placeOrderFn = useServerFn(placeOrder);
   const trackOrderFn = useServerFn(trackOrder);
+  const startPaymentFn = useServerFn(startOnlinePayment);
 
   const { data } = useQuery({
     queryKey: ["products"],
@@ -101,6 +103,7 @@ function Index() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [payMethod, setPayMethod] = useState<"transfer" | "card" | "ussd">("transfer");
   const [placing, setPlacing] = useState(false);
   const [orderResult, setOrderResult] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -127,6 +130,37 @@ function Index() {
     if (cart.length === 0) return;
     setPlacing(true);
     setOrderResult(null);
+
+    if (payMethod !== "transfer") {
+      try {
+        if (!email.trim()) {
+          setOrderResult({ ok: false, text: "Please add your email address to pay online." });
+          setPlacing(false);
+          return;
+        }
+        const pay = await startPaymentFn({
+          data: {
+            customerName: name.trim(),
+            customerPhone: phone.trim(),
+            customerEmail: email.trim(),
+            callbackUrl: `${window.location.origin}/payment-callback`,
+            channel: payMethod,
+            items: cart.map((l) => ({ name: l.name, price: l.price, qty: l.qty })),
+          },
+        });
+        if (pay.ok) {
+          window.location.href = pay.authorizationUrl;
+          return;
+        }
+        setOrderResult({ ok: false, text: pay.error });
+      } catch {
+        setOrderResult({ ok: false, text: "We couldn't start your payment. Please try again." });
+      } finally {
+        setPlacing(false);
+      }
+      return;
+    }
+
     try {
       const res = await placeOrderFn({
         data: {
@@ -464,16 +498,55 @@ function Index() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email (optional)"
+                placeholder={payMethod === "transfer" ? "Email (optional)" : "Email (required)"}
                 className="rounded-sm border bg-card p-3"
               />
+
+              <fieldset className="sm:col-span-3">
+                <legend className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Payment method
+                </legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {(
+                    [
+                      ["transfer", "Bank transfer", "Pay to our account and send the receipt"],
+                      ["card", "Card", "Debit or credit card, paid instantly"],
+                      ["ussd", "USSD", "Pay from your bank's USSD menu"],
+                    ] as const
+                  ).map(([value, label, hint]) => (
+                    <label
+                      key={value}
+                      className={`cursor-pointer rounded-sm border p-4 ${
+                        payMethod === value ? "border-gold bg-gold/10" : "border-border bg-card"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-bold">
+                        <input
+                          type="radio"
+                          name="payMethod"
+                          value={value}
+                          checked={payMethod === value}
+                          onChange={() => setPayMethod(value)}
+                        />
+                        {label}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
               <div className="flex flex-wrap gap-3 sm:col-span-3">
                 <button
                   type="submit"
                   disabled={cart.length === 0 || placing}
                   className="rounded-sm bg-gradient-gold px-7 py-3 text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground shadow-gold disabled:opacity-40"
                 >
-                  {placing ? "Placing order..." : "Place order"}
+                  {placing
+                    ? "Please wait..."
+                    : payMethod === "transfer"
+                      ? "Place order"
+                      : `Pay ${naira(total)} now`}
                 </button>
                 <button
                   type="button"
@@ -535,11 +608,18 @@ function Index() {
               </a>
             </div>
             <div className="rounded-sm border border-border bg-background p-7">
-              <h3 className="text-2xl">Pay Online</h3>
+              <h3 className="text-2xl text-gold">Pay Online</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Card and USSD payments are coming soon. For now, bank transfer confirms your order
-                fastest.
+                Pay instantly by card or from your bank's USSD menu. Choose Card or USSD in your
+                cart and you'll be taken to our secure payment page. Your order is only confirmed
+                once the payment is verified.
               </p>
+              <a
+                href="#cart"
+                className="mt-6 inline-block rounded-sm border border-gold/50 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-gold"
+              >
+                Pay from my cart
+              </a>
             </div>
           </div>
         </div>

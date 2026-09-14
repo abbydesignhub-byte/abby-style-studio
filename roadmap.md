@@ -2,18 +2,18 @@
 
 ## Done
 - Storefront, cart, checkout, order tracking
-- Admin dashboard (products + orders)
+- Admin dashboard v1 (products + orders)
 - AI shopping assistant widget
+- Site-wide style standardization (fonts, gold/cream/black tokens, radius scale)
+- Paystack key saved; card / USSD / bank-transfer checkout, verified callback + webhook
+- Payment only marked paid after Paystack verification (amount + currency + status checked, idempotent)
 
-## In progress
-- Site-wide style standardization: single font pair, gold/cream/black tokens, one radius scale
-- "Ask Abby AI" widget restyled to mockup and mounted on every page
+## In progress (stage order agreed with owner)
+1. Payments + checkout — final browser verification
+2. Admin dashboard — sidebar, overview stats, orders, products, customers, payments/USSD, inventory, audit log
+3. Shop depth — sizes, colours, stock, coupons, reviews, custom t-shirt orders, store settings
 
 ## Pending
-- Online payment (instant charge, global cards + Naira) — needs Paystack secret key
-- Order history: signed-in account page + guest lookup by phone/email
-- AI styling: outfit/style advisor + AI custom print design generator
-
-## Added 2026-09-03
-- Online payment flow (Paystack: init, callback verify, webhook) — needs PAYSTACK_SECRET_KEY
-- Admin dashboard review + publish wrap-up
+- Order history for signed-in customers + guest lookup
+- AI styling: outfit advisor + custom print design generator
+- Paystack webhook URL to be pasted into the Paystack dashboard after publishing
