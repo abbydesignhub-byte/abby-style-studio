@@ -498,16 +498,55 @@ function Index() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email (optional)"
+                placeholder={payMethod === "transfer" ? "Email (optional)" : "Email (required)"}
                 className="rounded-sm border bg-card p-3"
               />
+
+              <fieldset className="sm:col-span-3">
+                <legend className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Payment method
+                </legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {(
+                    [
+                      ["transfer", "Bank transfer", "Pay to our account and send the receipt"],
+                      ["card", "Card", "Debit or credit card, paid instantly"],
+                      ["ussd", "USSD", "Pay from your bank's USSD menu"],
+                    ] as const
+                  ).map(([value, label, hint]) => (
+                    <label
+                      key={value}
+                      className={`cursor-pointer rounded-sm border p-4 ${
+                        payMethod === value ? "border-gold bg-gold/10" : "border-border bg-card"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-bold">
+                        <input
+                          type="radio"
+                          name="payMethod"
+                          value={value}
+                          checked={payMethod === value}
+                          onChange={() => setPayMethod(value)}
+                        />
+                        {label}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
               <div className="flex flex-wrap gap-3 sm:col-span-3">
                 <button
                   type="submit"
                   disabled={cart.length === 0 || placing}
                   className="rounded-sm bg-gradient-gold px-7 py-3 text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground shadow-gold disabled:opacity-40"
                 >
-                  {placing ? "Placing order..." : "Place order"}
+                  {placing
+                    ? "Please wait..."
+                    : payMethod === "transfer"
+                      ? "Place order"
+                      : `Pay ${naira(total)} now`}
                 </button>
                 <button
                   type="button"
