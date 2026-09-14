@@ -44,6 +44,7 @@ export const startOnlinePayment = createServerFn({ method: "POST" })
         payment_method: "paystack",
         payment_reference: reference,
         payment_status: "unpaid",
+        payment_channel: data.channel,
         items: data.items,
         total,
       })
