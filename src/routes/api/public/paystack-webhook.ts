@@ -19,21 +19,48 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
 
         const payload = JSON.parse(body) as {
           event?: string;
-          data?: { reference?: string; status?: string };
+          data?: {
+            reference?: string;
+            status?: string;
+            amount?: number;
+            currency?: string;
+            channel?: string;
+          };
         };
         const reference = payload.data?.reference;
         if (!reference) return new Response("ok");
 
-        const paid = payload.event === "charge.success" && payload.data?.status === "success";
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: order } = await supabaseAdmin
+          .from("orders")
+          .select("id, total, payment_status")
+          .eq("payment_reference", reference)
+          .maybeSingle();
+
+        // Unknown reference, or already confirmed — nothing to do (idempotent).
+        if (!order || order.payment_status === "paid") return new Response("ok");
+
+        const tx = payload.data;
+        const amountMatches = Math.round(Number(order.total) * 100) === Number(tx?.amount ?? -1);
+        const paid =
+          payload.event === "charge.success" &&
+          tx?.status === "success" &&
+          tx?.currency === "NGN" &&
+          amountMatches;
+
         await supabaseAdmin
           .from("orders")
           .update(
             paid
-              ? { payment_status: "paid", status: "paid", paid_at: new Date().toISOString() }
+              ? {
+                  payment_status: "paid",
+                  status: "paid",
+                  paid_at: new Date().toISOString(),
+                  ...(tx?.channel ? { payment_channel: tx.channel } : {}),
+                }
               : { payment_status: "failed" },
           )
-          .eq("payment_reference", reference);
+          .eq("id", order.id);
 
         return new Response("ok");
       },
