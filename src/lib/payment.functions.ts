@@ -64,6 +64,7 @@ export const startOnlinePayment = createServerFn({ method: "POST" })
         currency: "NGN",
         reference,
         callback_url: data.callbackUrl,
+        channels: [data.channel],
         metadata: { order_number: row.order_number, customer_phone: data.customerPhone },
       }),
     });
