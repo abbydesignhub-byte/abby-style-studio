@@ -84,6 +84,7 @@ function Index() {
   const listProductsFn = useServerFn(listProducts);
   const placeOrderFn = useServerFn(placeOrder);
   const trackOrderFn = useServerFn(trackOrder);
+  const startPaymentFn = useServerFn(startOnlinePayment);
 
   const { data } = useQuery({
     queryKey: ["products"],
