@@ -10,21 +10,27 @@ import {
   adminSaveProduct,
   adminDeleteProduct,
   adminUpdateOrder,
+  adminStats,
+  adminCustomers,
+  adminPayments,
+  adminAuditLog,
+  adminUsers,
+  ORDER_STATUSES,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Dashboard — Abby Design Hub" },
+      { title: "Admin Dashboard — Abby × Emmy Style Studio" },
       {
         name: "description",
         content:
-          "Manage products, review customer orders and update order status and tracking details for Abby Design Hub.",
+          "Manage orders, payments, products, customers and delivery tracking for Abby × Emmy Style Studio.",
       },
-      { property: "og:title", content: "Admin Dashboard — Abby Design Hub" },
+      { property: "og:title", content: "Admin Dashboard — Abby × Emmy Style Studio" },
       {
         property: "og:description",
-        content: "Store management for products, orders and delivery tracking.",
+        content: "Store management for orders, payments, products and delivery tracking.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -33,16 +39,41 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
   errorComponent: ({ error }) => (
     <main className="mx-auto max-w-xl px-5 py-24 text-center">
-      <h1 className="text-3xl">Something went wrong</h1>
-      <p className="mt-3 text-muted-foreground">{error.message}</p>
+      <h1 className="text-3xl">
+        {error.message.includes("ACCESS DENIED") ? "ACCESS DENIED" : "Something went wrong"}
+      </h1>
+      <p className="mt-3 text-muted-foreground">
+        {error.message.includes("ACCESS DENIED")
+          ? "This account is not authorised to view store management."
+          : error.message}
+      </p>
     </main>
   ),
 });
 
 const naira = (n: number) => "₦" + Number(n).toLocaleString("en-NG");
+const labelise = (s: string) => s.replace(/_/g, " ");
 
-const STATUSES = ["pending", "paid", "printing", "shipped", "delivered", "cancelled"] as const;
-type Status = (typeof STATUSES)[number];
+type Section =
+  | "overview"
+  | "orders"
+  | "products"
+  | "customers"
+  | "payments"
+  | "audit"
+  | "admins";
+
+const SECTIONS: { key: Section; label: string }[] = [
+  { key: "overview", label: "Dashboard" },
+  { key: "orders", label: "Orders" },
+  { key: "products", label: "Products" },
+  { key: "customers", label: "Customers" },
+  { key: "payments", label: "Payments" },
+  { key: "audit", label: "Audit log" },
+  { key: "admins", label: "Admin users" },
+];
+
+type Status = (typeof ORDER_STATUSES)[number];
 
 type ProductForm = {
   id?: string;
@@ -68,7 +99,8 @@ const emptyProduct: ProductForm = {
 function AdminPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"orders" | "products">("orders");
+  const [section, setSection] = useState<Section>("overview");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isAdminFn = useServerFn(getIsAdmin);
   const { data: me, isLoading } = useQuery({ queryKey: ["is-admin"], queryFn: () => isAdminFn() });
@@ -77,7 +109,7 @@ function AdminPage() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/admin/login", replace: true });
   };
 
   if (isLoading) {
@@ -87,10 +119,9 @@ function AdminPage() {
   if (!me?.isAdmin) {
     return (
       <main className="mx-auto max-w-lg px-5 py-24 text-center">
-        <h1 className="text-3xl">Admin access only</h1>
+        <h1 className="font-display text-4xl tracking-widest">ACCESS DENIED</h1>
         <p className="mt-3 text-muted-foreground">
-          Your account doesn't have admin rights yet. Ask the store owner to grant admin access to
-          this account.
+          This account is not authorised to view store management.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link to="/" className="rounded-md border px-5 py-3 text-sm font-bold uppercase">
@@ -108,48 +139,335 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/40">
-      <header className="bg-gradient-ink text-ink-foreground">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
+    <div className="min-h-screen bg-secondary/40 md:flex">
+      <aside className="bg-gradient-ink text-ink-foreground md:w-60 md:shrink-0">
+        <div className="flex items-center justify-between px-5 py-5">
           <div>
-            <p className="font-display text-2xl tracking-widest text-gold">ABBY DESIGN HUB</p>
-            <h1 className="text-sm uppercase tracking-[0.3em] text-ink-foreground/70">
-              Admin Dashboard
-            </h1>
+            <p className="font-display text-xl tracking-widest text-gold">EMMY &amp; ABBY</p>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-ink-foreground/60">
+              Style Studio Admin
+            </p>
           </div>
-          <div className="flex gap-3">
-            <Link
-              to="/"
-              className="rounded-md border border-ink-foreground/25 px-4 py-2 text-sm font-semibold uppercase"
-            >
-              View store
-            </Link>
-            <button
-              onClick={signOut}
-              className="rounded-md bg-gradient-gold px-4 py-2 text-sm font-bold uppercase text-accent-foreground"
-            >
-              Sign out
-            </button>
-          </div>
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="rounded-md border border-ink-foreground/25 px-3 py-1 text-xs font-bold uppercase md:hidden"
+          >
+            Menu
+          </button>
         </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-5 py-8">
-        <div className="mb-6 flex gap-2">
-          {(["orders", "products"] as const).map((t) => (
+        <nav className={`${menuOpen ? "block" : "hidden"} px-3 pb-5 md:block`}>
+          {SECTIONS.map((s) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`rounded-md px-5 py-2 text-sm font-bold uppercase tracking-wide ${
-                tab === t ? "bg-primary text-primary-foreground" : "bg-card"
+              key={s.key}
+              onClick={() => {
+                setSection(s.key);
+                setMenuOpen(false);
+              }}
+              className={`mb-1 block w-full rounded-md px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide ${
+                section === s.key
+                  ? "bg-gradient-gold text-accent-foreground"
+                  : "text-ink-foreground/80 hover:bg-ink-foreground/10"
               }`}
             >
-              {t}
+              {s.label}
             </button>
           ))}
-        </div>
-        {tab === "orders" ? <OrdersPanel /> : <ProductsPanel />}
+          <Link
+            to="/"
+            className="mb-1 block rounded-md px-4 py-2 text-sm font-semibold uppercase tracking-wide text-ink-foreground/80 hover:bg-ink-foreground/10"
+          >
+            View store
+          </Link>
+          <button
+            onClick={signOut}
+            className="block w-full rounded-md px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide text-ink-foreground/80 hover:bg-ink-foreground/10"
+          >
+            Logout
+          </button>
+        </nav>
+      </aside>
+
+      <main className="flex-1 px-5 py-8">
+        <header className="mb-6">
+          <h1 className="font-display text-3xl tracking-wide">
+            {SECTIONS.find((s) => s.key === section)?.label}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Signed in as {me.email} · {new Date().toLocaleDateString("en-NG", { dateStyle: "full" })}
+          </p>
+        </header>
+
+        {section === "overview" && <OverviewPanel onOpenOrders={() => setSection("orders")} />}
+        {section === "orders" && <OrdersPanel />}
+        {section === "products" && <ProductsPanel />}
+        {section === "customers" && <CustomersPanel />}
+        {section === "payments" && <PaymentsPanel />}
+        {section === "audit" && <AuditPanel />}
+        {section === "admins" && <AdminUsersPanel />}
+      </main>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-md border border-gold/25 bg-card p-5 shadow-card">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
+      <p className="mt-2 font-display text-3xl tracking-wide">{value}</p>
+    </div>
+  );
+}
+
+function OverviewPanel({ onOpenOrders }: { onOpenOrders: () => void }) {
+  const statsFn = useServerFn(adminStats);
+  const ordersFn = useServerFn(adminListOrders);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: () => statsFn(),
+  });
+  const { data: orders = [] } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: () => ordersFn(),
+  });
+
+  if (isLoading || !stats) return <p className="text-muted-foreground">Loading figures…</p>;
+  const peak = Math.max(1, ...stats.chart.map((c) => c.revenue));
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Today's sales" value={naira(stats.todaysSales)} />
+        <StatCard label="Total sales" value={naira(stats.totalSales)} />
+        <StatCard label="Total orders" value={stats.totalOrders} />
+        <StatCard label="Pending orders" value={stats.pendingOrders} />
+        <StatCard label="Processing" value={stats.processingOrders} />
+        <StatCard label="Completed" value={stats.completedOrders} />
+        <StatCard label="Customers" value={stats.customers} />
+        <StatCard label="Pending payments" value={stats.pendingPayments} />
       </div>
+
+      <section className="rounded-md border border-gold/25 bg-card p-5 shadow-card">
+        <h2 className="mb-4 text-lg font-bold uppercase tracking-wide">Revenue, last 7 days</h2>
+        <div className="flex h-40 items-end gap-3">
+          {stats.chart.map((d) => (
+            <div key={d.label} className="flex flex-1 flex-col items-center gap-2">
+              <div
+                className="w-full rounded-t bg-gradient-gold"
+                style={{ height: `${(d.revenue / peak) * 100}%`, minHeight: 2 }}
+                title={naira(d.revenue)}
+              />
+              <span className="text-[11px] uppercase text-muted-foreground">{d.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-md border border-gold/25 bg-card p-5 shadow-card">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold uppercase tracking-wide">Recent orders</h2>
+          <button
+            onClick={onOpenOrders}
+            className="rounded-md border px-4 py-2 text-xs font-bold uppercase"
+          >
+            View all orders
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <th className="pb-2">Order</th>
+                <th className="pb-2">Customer</th>
+                <th className="pb-2">Amount</th>
+                <th className="pb-2">Payment</th>
+                <th className="pb-2">Status</th>
+                <th className="pb-2">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.slice(0, 8).map((o) => (
+                <tr key={o.id} className="border-t">
+                  <td className="py-2 font-mono text-xs">{o.order_number}</td>
+                  <td className="py-2">{o.customer_name}</td>
+                  <td className="py-2">{naira(Number(o.total))}</td>
+                  <td className="py-2 uppercase">{labelise(o.payment_status)}</td>
+                  <td className="py-2 uppercase">{labelise(o.status)}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {new Date(o.created_at).toLocaleDateString("en-NG")}
+                  </td>
+                </tr>
+              ))}
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-4 text-muted-foreground">
+                    No orders yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function CustomersPanel() {
+  const fn = useServerFn(adminCustomers);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["admin-customers"],
+    queryFn: () => fn(),
+  });
+  if (isLoading) return <p className="text-muted-foreground">Loading customers…</p>;
+  if (data.length === 0) return <p className="text-muted-foreground">No customers yet.</p>;
+  return (
+    <div className="overflow-x-auto rounded-md border border-gold/25 bg-card p-5 shadow-card">
+      <table className="w-full min-w-[640px] text-sm">
+        <thead>
+          <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <th className="pb-2">Name</th>
+            <th className="pb-2">Phone</th>
+            <th className="pb-2">Email</th>
+            <th className="pb-2">Orders</th>
+            <th className="pb-2">Total spent</th>
+            <th className="pb-2">Last order</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((c) => (
+            <tr key={c.phone} className="border-t">
+              <td className="py-2 font-semibold">{c.name}</td>
+              <td className="py-2">{c.phone}</td>
+              <td className="py-2 text-muted-foreground">{c.email ?? "—"}</td>
+              <td className="py-2">{c.orders}</td>
+              <td className="py-2">{naira(c.spent)}</td>
+              <td className="py-2 text-muted-foreground">
+                {new Date(c.lastOrder).toLocaleDateString("en-NG")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PaymentsPanel() {
+  const fn = useServerFn(adminPayments);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["admin-payments"],
+    queryFn: () => fn(),
+  });
+  const [filter, setFilter] = useState<"all" | "paid" | "unpaid" | "failed">("all");
+  if (isLoading) return <p className="text-muted-foreground">Loading payments…</p>;
+  const rows = data.filter((p) => filter === "all" || p.payment_status === filter);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {(["all", "paid", "unpaid", "failed"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`rounded-md px-4 py-2 text-xs font-bold uppercase ${
+              filter === f ? "bg-primary text-primary-foreground" : "bg-card border"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+      <div className="overflow-x-auto rounded-md border border-gold/25 bg-card p-5 shadow-card">
+        <table className="w-full min-w-[720px] text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <th className="pb-2">Reference</th>
+              <th className="pb-2">Order</th>
+              <th className="pb-2">Customer</th>
+              <th className="pb-2">Amount</th>
+              <th className="pb-2">Channel</th>
+              <th className="pb-2">Status</th>
+              <th className="pb-2">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p) => (
+              <tr key={p.id} className="border-t">
+                <td className="py-2 font-mono text-[11px]">{p.payment_reference}</td>
+                <td className="py-2 font-mono text-xs">{p.order_number}</td>
+                <td className="py-2">{p.customer_name}</td>
+                <td className="py-2">{naira(Number(p.total))}</td>
+                <td className="py-2 uppercase">{p.payment_channel ?? p.payment_method}</td>
+                <td className="py-2 uppercase">{labelise(p.payment_status)}</td>
+                <td className="py-2 text-muted-foreground">
+                  {new Date(p.paid_at ?? p.created_at).toLocaleString("en-NG")}
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="py-4 text-muted-foreground">
+                  No payments in this view.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AuditPanel() {
+  const fn = useServerFn(adminAuditLog);
+  const { data = [], isLoading } = useQuery({ queryKey: ["admin-audit"], queryFn: () => fn() });
+  if (isLoading) return <p className="text-muted-foreground">Loading audit log…</p>;
+  if (data.length === 0) return <p className="text-muted-foreground">No admin actions recorded yet.</p>;
+  return (
+    <ul className="space-y-2">
+      {data.map((a) => (
+        <li key={a.id} className="rounded-md border border-gold/25 bg-card p-4 text-sm shadow-card">
+          <p className="font-semibold">
+            {a.action} <span className="text-muted-foreground">· {a.admin_email}</span>
+          </p>
+          <p className="text-muted-foreground">{a.detail}</p>
+          <p className="text-xs text-muted-foreground">
+            {new Date(a.created_at).toLocaleString("en-NG")}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function AdminUsersPanel() {
+  const fn = useServerFn(adminUsers);
+  const { data = [], isLoading } = useQuery({ queryKey: ["admin-users"], queryFn: () => fn() });
+  if (isLoading) return <p className="text-muted-foreground">Loading admin users…</p>;
+  return (
+    <div className="overflow-x-auto rounded-md border border-gold/25 bg-card p-5 shadow-card">
+      <table className="w-full min-w-[560px] text-sm">
+        <thead>
+          <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <th className="pb-2">Email</th>
+            <th className="pb-2">Name</th>
+            <th className="pb-2">Registered</th>
+            <th className="pb-2">Last login</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((u) => (
+            <tr key={u.email} className="border-t">
+              <td className="py-2">{u.email}</td>
+              <td className="py-2">{u.full_name ?? "—"}</td>
+              <td className="py-2">{u.is_registered ? "Yes" : "Not yet"}</td>
+              <td className="py-2 text-muted-foreground">
+                {u.last_login ? new Date(u.last_login).toLocaleString("en-NG") : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -162,6 +480,7 @@ function OrdersPanel() {
     queryKey: ["admin-orders"],
     queryFn: () => listFn(),
   });
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ status: Status; trackingNumber: string; trackingNote: string }>(
     { status: "pending", trackingNumber: "", trackingNote: "" },
@@ -177,22 +496,40 @@ function OrdersPanel() {
     onSuccess: () => {
       setOpen(null);
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
 
   if (isLoading) return <p className="text-muted-foreground">Loading orders…</p>;
-  if (orders.length === 0)
-    return <p className="rounded-xl bg-card p-6 text-muted-foreground shadow-card">No orders yet.</p>;
+  const term = search.trim().toLowerCase();
+  const visible = term
+    ? orders.filter((o) =>
+        [o.order_number, o.customer_name, o.customer_phone, o.payment_reference ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(term),
+      )
+    : orders;
 
   return (
     <div className="space-y-4">
-      {orders.map((o) => {
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search order number, customer, phone or reference"
+        aria-label="Search orders"
+        className="w-full rounded-md border bg-background p-3 text-sm"
+      />
+      {visible.length === 0 && (
+        <p className="rounded-md bg-card p-6 text-muted-foreground shadow-card">No orders found.</p>
+      )}
+      {visible.map((o) => {
         const items = Array.isArray(o.items)
           ? (o.items as Array<{ name: string; qty: number; price: number }>)
           : [];
         const editing = open === o.id;
         return (
-          <article key={o.id} className="rounded-xl bg-card p-5 shadow-card">
+          <article key={o.id} className="rounded-md border border-gold/25 bg-card p-5 shadow-card">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="font-mono text-sm font-bold">{o.order_number}</p>
@@ -208,7 +545,7 @@ function OrdersPanel() {
               <div className="text-right">
                 <p className="text-xl font-bold">{naira(Number(o.total))}</p>
                 <span className="mt-1 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">
-                  {o.status}
+                  {labelise(o.status)}
                 </span>
                 <span
                   className={`mt-1 ml-2 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
@@ -270,9 +607,9 @@ function OrdersPanel() {
                   onChange={(e) => setDraft({ ...draft, status: e.target.value as Status })}
                   className="rounded-md border bg-background p-3"
                 >
-                  {STATUSES.map((s) => (
+                  {ORDER_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {s}
+                      {labelise(s)}
                     </option>
                   ))}
                 </select>
@@ -312,14 +649,16 @@ function OrdersPanel() {
                 onClick={() => {
                   setOpen(o.id);
                   setDraft({
-                    status: (o.status as Status) ?? "pending",
+                    status: (ORDER_STATUSES as readonly string[]).includes(o.status)
+                      ? (o.status as Status)
+                      : "pending",
                     trackingNumber: o.tracking_number ?? "",
                     trackingNote: o.tracking_note ?? "",
                   });
                 }}
                 className="mt-4 rounded-md border px-5 py-2 text-sm font-bold uppercase"
               >
-                Update status & tracking
+                Update status &amp; tracking
               </button>
             )}
           </article>
@@ -382,7 +721,7 @@ function ProductsPanel() {
             e.preventDefault();
             save.mutate(form);
           }}
-          className="grid gap-3 rounded-xl bg-card p-5 shadow-card sm:grid-cols-2"
+          className="grid gap-3 rounded-md border border-gold/25 bg-card p-5 shadow-card sm:grid-cols-2"
         >
           <input
             required
@@ -466,7 +805,7 @@ function ProductsPanel() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         {products.map((p) => (
-          <article key={p.id} className="rounded-xl bg-card p-5 shadow-card">
+          <article key={p.id} className="rounded-md border border-gold/25 bg-card p-5 shadow-card">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl">{p.name}</h3>
