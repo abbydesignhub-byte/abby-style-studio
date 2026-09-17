@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { listProducts, placeOrder, trackOrder } from "@/lib/shop.functions";
+import { Logo, PHONES, WHATSAPP_NUMBERS, TAGLINE } from "@/components/site/Logo";
 import { startOnlinePayment } from "@/lib/payment.functions";
 import heroImg from "@/assets/hero.jpg";
 import teeNaija from "@/assets/tee-naija.jpg";
@@ -666,10 +667,10 @@ function Index() {
       <footer id="contact" className="bg-ink py-16 text-ink-foreground">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="font-display text-2xl tracking-[0.16em]">
-              ABBY <span className="text-gold">×</span> EMMY
+            <Logo size={44} light />
+            <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-ink-foreground/50">
+              {TAGLINE}
             </p>
-            <p className="text-[10px] uppercase tracking-[0.42em] text-ink-foreground/50">Style Studio</p>
             <p className="mt-4 text-sm text-ink-foreground/70">
               Premium tees. Timeless style. Wear your story.
             </p>
@@ -695,12 +696,19 @@ function Index() {
           <div>
             <h3 className="text-lg text-gold">Contact</h3>
             <ul className="mt-3 space-y-1 text-sm text-ink-foreground/70">
-              <li>
-                WhatsApp:{" "}
-                <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noreferrer" className="hover:text-gold">
-                  08055256283
-                </a>
-              </li>
+              {PHONES.map((p, i) => (
+                <li key={p}>
+                  WhatsApp:{" "}
+                  <a
+                    href={`https://wa.me/${WHATSAPP_NUMBERS[i]}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-gold"
+                  >
+                    {p}
+                  </a>
+                </li>
+              ))}
               <li>
                 Email:{" "}
                 <a href={`mailto:${EMAIL}`} className="hover:text-gold">
@@ -711,7 +719,7 @@ function Index() {
           </div>
         </div>
         <p className="mx-auto mt-12 max-w-7xl px-5 text-xs text-ink-foreground/40">
-          © 2026 Abby × Emmy Style Studio. All rights reserved. Designed in Nigeria.
+          © 2026 EMMY &amp; ABBY. All rights reserved. Designed in Nigeria.
         </p>
       </footer>
 

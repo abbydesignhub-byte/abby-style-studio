@@ -9,9 +9,10 @@
 - Payment only marked paid after Paystack verification (amount + currency + status checked, idempotent)
 
 ## In progress (stage order agreed with owner)
-1. Payments + checkout — final browser verification
-2. Admin dashboard — sidebar, overview stats, orders, products, customers, payments/USSD, inventory, audit log
-3. Shop depth — sizes, colours, stock, coupons, reviews, custom t-shirt orders, store settings
+1. Admin dashboard — sidebar + overview + orders/products/customers/payments/audit done; inventory, custom orders, coupons, reviews, settings pending
+2. ACCESS DENIED gate for non-allowlisted admins (/admin, /admin/login)
+3. EA crown logo + three official phone numbers across footer, contact, account, checkout, admin
+4. Shop depth — sizes, colours, stock, coupons, reviews, custom t-shirt orders, store settings
 
 ## Pending
 - Order history for signed-in customers + guest lookup
