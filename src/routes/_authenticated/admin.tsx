@@ -143,9 +143,9 @@ function AdminPage() {
       <aside className="bg-gradient-ink text-ink-foreground md:w-60 md:shrink-0">
         <div className="flex items-center justify-between px-5 py-5">
           <div>
-            <p className="font-display text-xl tracking-widest text-gold">EMMY &amp; ABBY</p>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-ink-foreground/60">
-              Style Studio Admin
+            <Logo size={36} light />
+            <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-ink-foreground/60">
+              Admin
             </p>
           </div>
           <button
