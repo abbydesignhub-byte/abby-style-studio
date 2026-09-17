@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { listProducts, placeOrder, trackOrder } from "@/lib/shop.functions";
+import { Logo, PHONES, WHATSAPP_NUMBERS, TAGLINE } from "@/components/site/Logo";
 import { startOnlinePayment } from "@/lib/payment.functions";
 import heroImg from "@/assets/hero.jpg";
 import teeNaija from "@/assets/tee-naija.jpg";
