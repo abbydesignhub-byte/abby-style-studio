@@ -667,10 +667,10 @@ function Index() {
       <footer id="contact" className="bg-ink py-16 text-ink-foreground">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="font-display text-2xl tracking-[0.16em]">
-              ABBY <span className="text-gold">×</span> EMMY
+            <Logo size={44} light />
+            <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-ink-foreground/50">
+              {TAGLINE}
             </p>
-            <p className="text-[10px] uppercase tracking-[0.42em] text-ink-foreground/50">Style Studio</p>
             <p className="mt-4 text-sm text-ink-foreground/70">
               Premium tees. Timeless style. Wear your story.
             </p>
