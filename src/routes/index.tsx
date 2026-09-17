@@ -719,7 +719,7 @@ function Index() {
           </div>
         </div>
         <p className="mx-auto mt-12 max-w-7xl px-5 text-xs text-ink-foreground/40">
-          © 2026 Abby × Emmy Style Studio. All rights reserved. Designed in Nigeria.
+          © 2026 EMMY &amp; ABBY. All rights reserved. Designed in Nigeria.
         </p>
       </footer>
 
