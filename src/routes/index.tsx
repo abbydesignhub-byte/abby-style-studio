@@ -696,12 +696,19 @@ function Index() {
           <div>
             <h3 className="text-lg text-gold">Contact</h3>
             <ul className="mt-3 space-y-1 text-sm text-ink-foreground/70">
-              <li>
-                WhatsApp:{" "}
-                <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noreferrer" className="hover:text-gold">
-                  08055256283
-                </a>
-              </li>
+              {PHONES.map((p, i) => (
+                <li key={p}>
+                  WhatsApp:{" "}
+                  <a
+                    href={`https://wa.me/${WHATSAPP_NUMBERS[i]}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-gold"
+                  >
+                    {p}
+                  </a>
+                </li>
+              ))}
               <li>
                 Email:{" "}
                 <a href={`mailto:${EMAIL}`} className="hover:text-gold">
