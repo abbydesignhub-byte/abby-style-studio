@@ -56,6 +56,96 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          min_order_total: number
+          times_used: number
+          usage_limit: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number
+          times_used?: number
+          usage_limit?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number
+          times_used?: number
+          usage_limit?: number | null
+        }
+        Relationships: []
+      }
+      custom_orders: {
+        Row: {
+          admin_note: string | null
+          colour: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          details: string
+          id: string
+          quantity: number
+          quoted_price: number | null
+          reference_image_url: string | null
+          size: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          colour?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          details: string
+          id?: string
+          quantity?: number
+          quoted_price?: number | null
+          reference_image_url?: string | null
+          size?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          colour?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          details?: string
+          id?: string
+          quantity?: number
+          quoted_price?: number | null
+          reference_image_url?: string | null
+          size?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -122,38 +212,56 @@ export type Database = {
       products: {
         Row: {
           category: string
+          colors: string[]
+          compare_at_price: number | null
           created_at: string
           description: string | null
+          featured: boolean
           id: string
           image_url: string | null
           is_active: boolean
+          low_stock_threshold: number
           name: string
           price: number
+          sizes: string[]
           sort_order: number
+          stock_quantity: number
           updated_at: string
         }
         Insert: {
           category?: string
+          colors?: string[]
+          compare_at_price?: number | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
+          low_stock_threshold?: number
           name: string
           price?: number
+          sizes?: string[]
           sort_order?: number
+          stock_quantity?: number
           updated_at?: string
         }
         Update: {
           category?: string
+          colors?: string[]
+          compare_at_price?: number | null
           created_at?: string
           description?: string | null
+          featured?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
+          low_stock_threshold?: number
           name?: string
           price?: number
+          sizes?: string[]
           sort_order?: number
+          stock_quantity?: number
           updated_at?: string
         }
         Relationships: []
@@ -179,6 +287,62 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          id: string
+          is_approved: boolean
+          product_id: string | null
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          id?: string
+          is_approved?: boolean
+          product_id?: string | null
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          id?: string
+          is_approved?: boolean
+          product_id?: string | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
         }
         Relationships: []
       }
