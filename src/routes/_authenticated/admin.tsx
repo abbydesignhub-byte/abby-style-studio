@@ -794,11 +794,21 @@ function OrdersPanel() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="font-mono text-sm font-bold">{o.order_number}</p>
-                <p className="text-lg font-semibold">{o.customer_name}</p>
+                <p className="text-lg font-semibold">
+                  {o.customer_name}{" "}
+                  <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    {o.user_id ? "Registered" : "Guest"}
+                  </span>
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {o.customer_phone}
                   {o.customer_email ? ` · ${o.customer_email}` : ""}
                 </p>
+                {o.shipping_address && (
+                  <p className="text-sm text-muted-foreground">
+                    {[o.shipping_address, o.city, o.state].filter(Boolean).join(", ")}
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">
                   {new Date(o.created_at).toLocaleString("en-NG")}
                 </p>
