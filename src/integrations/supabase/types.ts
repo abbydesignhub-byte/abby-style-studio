@@ -148,7 +148,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          city: string | null
           created_at: string
+          created_by_admin: boolean
           customer_email: string | null
           customer_name: string
           customer_phone: string
@@ -160,6 +162,8 @@ export type Database = {
           payment_method: string
           payment_reference: string | null
           payment_status: string
+          shipping_address: string | null
+          state: string | null
           status: string
           total: number
           tracking_note: string | null
@@ -168,7 +172,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          city?: string | null
           created_at?: string
+          created_by_admin?: boolean
           customer_email?: string | null
           customer_name: string
           customer_phone: string
@@ -180,6 +186,8 @@ export type Database = {
           payment_method?: string
           payment_reference?: string | null
           payment_status?: string
+          shipping_address?: string | null
+          state?: string | null
           status?: string
           total?: number
           tracking_note?: string | null
@@ -188,7 +196,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          city?: string | null
           created_at?: string
+          created_by_admin?: boolean
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
@@ -200,6 +210,8 @@ export type Database = {
           payment_method?: string
           payment_reference?: string | null
           payment_status?: string
+          shipping_address?: string | null
+          state?: string | null
           status?: string
           total?: number
           tracking_note?: string | null
