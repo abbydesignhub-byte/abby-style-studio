@@ -724,6 +724,7 @@ function OrdersPanel() {
     queryFn: () => listFn(),
   });
   const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ status: Status; trackingNumber: string; trackingNote: string }>(
     { status: "pending", trackingNumber: "", trackingNote: "" },
