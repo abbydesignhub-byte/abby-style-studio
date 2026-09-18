@@ -11,6 +11,7 @@ import {
   adminSaveProduct,
   adminDeleteProduct,
   adminUpdateOrder,
+  adminCreateOrder,
   adminStats,
   adminCustomers,
   adminPayments,
@@ -473,6 +474,247 @@ function AdminUsersPanel() {
   );
 }
 
+type ManualItem = { name: string; size: string; colour: string; price: string; qty: string };
+
+const emptyItem: ManualItem = { name: "", size: "", colour: "", price: "", qty: "1" };
+
+function NewOrderForm({ onDone }: { onDone: () => void }) {
+  const createFn = useServerFn(adminCreateOrder);
+  const productsFn = useServerFn(adminListProducts);
+  const { data: products = [] } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: () => productsFn(),
+  });
+  const [form, setForm] = useState({
+    customerName: "",
+    customerPhone: "",
+    customerEmail: "",
+    shippingAddress: "",
+    city: "",
+    state: "",
+    paymentMethod: "unpaid" as "unpaid" | "cash" | "transfer" | "ussd" | "card",
+    paymentStatus: "unpaid" as "unpaid" | "paid" | "failed",
+    status: "pending" as Status,
+  });
+  const [items, setItems] = useState<ManualItem[]>([{ ...emptyItem }]);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState("");
+
+  const setItem = (idx: number, patch: Partial<ManualItem>) =>
+    setItems((list) => list.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+
+  const total = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 0), 0);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      createFn({
+        data: {
+          ...form,
+          items: items
+            .filter((i) => i.name.trim())
+            .map((i) => ({
+              name: i.name.trim(),
+              size: i.size,
+              colour: i.colour,
+              price: Number(i.price) || 0,
+              qty: Number(i.qty) || 1,
+            })),
+        },
+      }),
+    onSuccess: (res: { orderNumber: string }) => {
+      setSaved(res.orderNumber);
+      setError("");
+      onDone();
+    },
+    onError: (e: Error) => setError(e.message),
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!items.some((i) => i.name.trim())) {
+          setError("Add at least one product.");
+          return;
+        }
+        mutation.mutate();
+      }}
+      className="space-y-5 rounded-md border border-gold/25 bg-card p-5 shadow-card"
+    >
+      <h3 className="text-lg font-bold uppercase tracking-wide">Create new order</h3>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <input
+          required
+          value={form.customerName}
+          onChange={(e) => setForm({ ...form, customerName: e.target.value })}
+          placeholder="Customer name *"
+          aria-label="Customer name"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+        <input
+          required
+          value={form.customerPhone}
+          onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
+          placeholder="Phone *"
+          aria-label="Phone"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+        <input
+          type="email"
+          value={form.customerEmail}
+          onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
+          placeholder="Email (optional)"
+          aria-label="Email"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+        <input
+          required
+          value={form.shippingAddress}
+          onChange={(e) => setForm({ ...form, shippingAddress: e.target.value })}
+          placeholder="Delivery address *"
+          aria-label="Delivery address"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+        <input
+          value={form.city}
+          onChange={(e) => setForm({ ...form, city: e.target.value })}
+          placeholder="City"
+          aria-label="City"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+        <input
+          value={form.state}
+          onChange={(e) => setForm({ ...form, state: e.target.value })}
+          placeholder="State"
+          aria-label="State"
+          className="rounded-md border bg-background p-3 text-sm"
+        />
+      </div>
+
+      <div className="space-y-3 border-t pt-4">
+        {items.map((it, idx) => (
+          <div key={idx} className="grid gap-2 sm:grid-cols-6">
+            <select
+              value={it.name}
+              aria-label="Product"
+              onChange={(e) => {
+                const picked = products.find((p) => p.name === e.target.value);
+                setItem(idx, {
+                  name: e.target.value,
+                  price: picked ? String(picked.price) : it.price,
+                });
+              }}
+              className="rounded-md border bg-background p-3 text-sm sm:col-span-2"
+            >
+              <option value="">Select product *</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.name}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <input
+              value={it.size}
+              onChange={(e) => setItem(idx, { size: e.target.value })}
+              placeholder="Size"
+              aria-label="Size"
+              className="rounded-md border bg-background p-3 text-sm"
+            />
+            <input
+              value={it.colour}
+              onChange={(e) => setItem(idx, { colour: e.target.value })}
+              placeholder="Colour"
+              aria-label="Colour"
+              className="rounded-md border bg-background p-3 text-sm"
+            />
+            <input
+              type="number"
+              min="1"
+              value={it.qty}
+              onChange={(e) => setItem(idx, { qty: e.target.value })}
+              placeholder="Qty"
+              aria-label="Quantity"
+              className="rounded-md border bg-background p-3 text-sm"
+            />
+            <input
+              type="number"
+              min="0"
+              value={it.price}
+              onChange={(e) => setItem(idx, { price: e.target.value })}
+              placeholder="Price ₦"
+              aria-label="Price"
+              className="rounded-md border bg-background p-3 text-sm"
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setItems([...items, { ...emptyItem }])}
+          className="rounded-md border border-gold/40 px-4 py-2 text-xs font-bold uppercase"
+        >
+          Add another product
+        </button>
+      </div>
+
+      <div className="grid gap-3 border-t pt-4 sm:grid-cols-3">
+        <select
+          value={form.paymentMethod}
+          aria-label="Payment method"
+          onChange={(e) =>
+            setForm({ ...form, paymentMethod: e.target.value as typeof form.paymentMethod })
+          }
+          className="rounded-md border bg-background p-3 text-sm"
+        >
+          <option value="unpaid">Unpaid</option>
+          <option value="cash">Cash</option>
+          <option value="transfer">Bank transfer</option>
+          <option value="ussd">USSD</option>
+          <option value="card">Card</option>
+        </select>
+        <select
+          value={form.paymentStatus}
+          aria-label="Payment status"
+          onChange={(e) =>
+            setForm({ ...form, paymentStatus: e.target.value as typeof form.paymentStatus })
+          }
+          className="rounded-md border bg-background p-3 text-sm"
+        >
+          <option value="unpaid">Payment pending</option>
+          <option value="paid">Paid</option>
+          <option value="failed">Failed</option>
+        </select>
+        <select
+          value={form.status}
+          aria-label="Order status"
+          onChange={(e) => setForm({ ...form, status: e.target.value as Status })}
+          className="rounded-md border bg-background p-3 text-sm"
+        >
+          {ORDER_STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {labelise(s)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4 border-t pt-4">
+        <p className="text-lg font-bold">Total {naira(total)}</p>
+        <button
+          type="submit"
+          disabled={mutation.isPending}
+          className="rounded-md bg-primary px-5 py-2 text-sm font-bold uppercase text-primary-foreground disabled:opacity-50"
+        >
+          {mutation.isPending ? "Saving…" : "Save order"}
+        </button>
+        {saved && <p className="text-sm font-bold">Order {saved} created.</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    </form>
+  );
+}
+
+
 function OrdersPanel() {
   const queryClient = useQueryClient();
   const listFn = useServerFn(adminListOrders);
@@ -482,6 +724,7 @@ function OrdersPanel() {
     queryFn: () => listFn(),
   });
   const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ status: Status; trackingNumber: string; trackingNote: string }>(
     { status: "pending", trackingNumber: "", trackingNote: "" },
@@ -514,13 +757,30 @@ function OrdersPanel() {
 
   return (
     <div className="space-y-4">
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search order number, customer, phone or reference"
-        aria-label="Search orders"
-        className="w-full rounded-md border bg-background p-3 text-sm"
-      />
+      <div className="flex flex-wrap gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search order number, customer, phone or reference"
+          aria-label="Search orders"
+          className="min-w-[240px] flex-1 rounded-md border bg-background p-3 text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => setCreating((v) => !v)}
+          className="rounded-md bg-primary px-5 py-3 text-sm font-bold uppercase text-primary-foreground"
+        >
+          {creating ? "Close" : "Create new order"}
+        </button>
+      </div>
+      {creating && (
+        <NewOrderForm
+          onDone={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+            queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+          }}
+        />
+      )}
       {visible.length === 0 && (
         <p className="rounded-md bg-card p-6 text-muted-foreground shadow-card">No orders found.</p>
       )}
@@ -534,11 +794,21 @@ function OrdersPanel() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="font-mono text-sm font-bold">{o.order_number}</p>
-                <p className="text-lg font-semibold">{o.customer_name}</p>
+                <p className="text-lg font-semibold">
+                  {o.customer_name}{" "}
+                  <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    {o.user_id ? "Registered" : "Guest"}
+                  </span>
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {o.customer_phone}
                   {o.customer_email ? ` · ${o.customer_email}` : ""}
                 </p>
+                {o.shipping_address && (
+                  <p className="text-sm text-muted-foreground">
+                    {[o.shipping_address, o.city, o.state].filter(Boolean).join(", ")}
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">
                   {new Date(o.created_at).toLocaleString("en-NG")}
                 </p>

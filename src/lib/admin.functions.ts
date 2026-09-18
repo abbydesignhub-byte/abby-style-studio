@@ -277,3 +277,76 @@ export const adminUsers = createServerFn({ method: "GET" })
     const { data } = await context.supabase.rpc("list_admin_users");
     return data ?? [];
   });
+
+const manualOrderSchema = z.object({
+  customerName: z.string().trim().min(2).max(80),
+  customerPhone: z.string().trim().min(7).max(25),
+  customerEmail: z.string().trim().email().max(120).optional().or(z.literal("")),
+  shippingAddress: z.string().trim().min(3).max(300),
+  city: z.string().trim().max(80).optional().or(z.literal("")),
+  state: z.string().trim().max(80).optional().or(z.literal("")),
+  paymentMethod: z.enum(["unpaid", "cash", "transfer", "ussd", "card"]),
+  paymentStatus: z.enum(["unpaid", "paid", "failed"]),
+  status: z.enum(ORDER_STATUSES),
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(160),
+        size: z.string().trim().max(20).optional().or(z.literal("")),
+        colour: z.string().trim().max(40).optional().or(z.literal("")),
+        price: z.number().nonnegative().max(10_000_000),
+        qty: z.number().int().min(1).max(500),
+      }),
+    )
+    .min(1)
+    .max(50),
+});
+
+/** Creates a walk-in / phone order for a customer who has no account. */
+export const adminCreateOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => manualOrderSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const email = await assertAdmin(context as unknown as AuthContext);
+
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(
+      now.getDate(),
+    ).padStart(2, "0")}`;
+    const prefix = `ABS-${stamp}-`;
+
+    const { data: today } = await context.supabase
+      .from("orders")
+      .select("order_number")
+      .like("order_number", `${prefix}%`)
+      .order("order_number", { ascending: false })
+      .limit(1);
+
+    const last = today?.[0]?.order_number?.split("-")[2];
+    const orderNumber = prefix + String((last ? Number(last) : 0) + 1).padStart(4, "0");
+
+    const total = data.items.reduce((s, i) => s + i.price * i.qty, 0);
+    const paid = data.paymentStatus === "paid";
+
+    const { error } = await context.supabase.from("orders").insert({
+      order_number: orderNumber,
+      user_id: null,
+      customer_name: data.customerName,
+      customer_phone: data.customerPhone,
+      customer_email: data.customerEmail || null,
+      shipping_address: data.shippingAddress,
+      city: data.city || null,
+      state: data.state || null,
+      created_by_admin: true,
+      payment_method: data.paymentMethod,
+      payment_status: data.paymentStatus,
+      paid_at: paid ? new Date().toISOString() : null,
+      status: data.status,
+      items: data.items,
+      total,
+    });
+    if (error) throw new Error(error.message);
+
+    await audit(email, "order.create", `Manual order ${orderNumber} for ${data.customerName}`, null);
+    return { ok: true as const, orderNumber };
+  });
