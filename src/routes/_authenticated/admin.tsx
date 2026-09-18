@@ -521,7 +521,7 @@ function NewOrderForm({ onDone }: { onDone: () => void }) {
             })),
         },
       }),
-    onSuccess: (res) => {
+    onSuccess: (res: { orderNumber: string }) => {
       setSaved(res.orderNumber);
       setError("");
       onDone();
