@@ -11,6 +11,7 @@ import {
   adminSaveProduct,
   adminDeleteProduct,
   adminUpdateOrder,
+  adminCreateOrder,
   adminStats,
   adminCustomers,
   adminPayments,
