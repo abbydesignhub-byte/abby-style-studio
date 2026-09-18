@@ -756,13 +756,30 @@ function OrdersPanel() {
 
   return (
     <div className="space-y-4">
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search order number, customer, phone or reference"
-        aria-label="Search orders"
-        className="w-full rounded-md border bg-background p-3 text-sm"
-      />
+      <div className="flex flex-wrap gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search order number, customer, phone or reference"
+          aria-label="Search orders"
+          className="min-w-[240px] flex-1 rounded-md border bg-background p-3 text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => setCreating((v) => !v)}
+          className="rounded-md bg-primary px-5 py-3 text-sm font-bold uppercase text-primary-foreground"
+        >
+          {creating ? "Close" : "Create new order"}
+        </button>
+      </div>
+      {creating && (
+        <NewOrderForm
+          onDone={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+            queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+          }}
+        />
+      )}
       {visible.length === 0 && (
         <p className="rounded-md bg-card p-6 text-muted-foreground shadow-card">No orders found.</p>
       )}
