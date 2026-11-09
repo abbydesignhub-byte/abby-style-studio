@@ -22,6 +22,13 @@
       "when": 1789737422897,
       "tag": "0002_add_order_delivery_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794232132859,
+      "tag": "0003_support_center",
+      "breakpoints": true
     }
   ]
 }

@@ -358,6 +358,163 @@ export type Database = {
         }
         Relationships: []
       }
+      support_conversations: {
+        Row: {
+          access_token: string
+          ai_assisted: boolean
+          assigned_to: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          first_response_at: string | null
+          id: string
+          is_demo: boolean
+          last_message_at: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          subject: string | null
+          tags: string[]
+        }
+        Insert: {
+          access_token?: string
+          ai_assisted?: boolean
+          assigned_to?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          first_response_at?: string | null
+          id?: string
+          is_demo?: boolean
+          last_message_at?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string | null
+          tags?: string[]
+        }
+        Update: {
+          access_token?: string
+          ai_assisted?: boolean
+          assigned_to?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          first_response_at?: string | null
+          id?: string
+          is_demo?: boolean
+          last_message_at?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string | null
+          tags?: string[]
+        }
+        Relationships: []
+      }
+      support_kb_articles: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          ai_drafted: boolean
+          author: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender: string
+        }
+        Insert: {
+          ai_drafted?: boolean
+          author?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender: string
+        }
+        Update: {
+          ai_drafted?: boolean
+          author?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_notes: {
+        Row: {
+          author: string
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          author: string
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_notes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
